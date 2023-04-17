@@ -1,0 +1,24 @@
+#pragma kernel UpdateFogMask
+
+RWTexture2D<float4> fogMask;
+Texture2D<float4> circleMask;
+
+int2 maskPosition;
+int2 fogMaskSize;
+
+[numthreads(8, 8, 1)]
+void UpdateFogMask(uint3 id : SV_DispatchThreadID)
+{
+    int2 pos = id.xy + maskPosition;
+
+    if (pos.x >= 0 && pos.x < fogMaskSize.x && pos.y >= 0 && pos.y < fogMaskSize.y)
+    {
+        float4 circleColor = circleMask[id.xy];
+        float4 currentColor = fogMask[pos];
+
+        if (circleColor.a < 1) { 
+            float alpha = currentColor.a - (1 - circleColor.a);
+            fogMask[pos] = float4(circleColor.r, circleColor.g, circleColor.b, alpha);
+        } 
+    }
+}
